@@ -1,5 +1,3 @@
-//The cost to become a member of a fitness center is as follows: (a) the senior citizens discount is 30%; (b) if the membership is bought and paid for 12 or more months, the discount is 15%; and (c) if more than five personal training sessions are bought and paid for, the discount on each session is 20%. Write a menu-driven program that determines the cost of a new membership. Your program must contain a function that displays the general information about the fitness center and its charges, a function to get all of the necessary information to determine the membership cost, and a function to determine the membership cost. Use appropriate parameters to pass information in and out of a function. (Do not use any global variables.)
-
 #include <iostream>
 #include <iomanip>
 
@@ -28,19 +26,19 @@ void getMembershipInfo(int &months, int &sessions, bool &isSenior) {
 }
 
 double calculateCost(int months, int sessions, bool isSenior) {
-    double baseCost = 100.0; // Base cost for membership
-    double totalCost = baseCost;
+    double baseCost = 50.0; // Base cost for membership
+    double totalCost = baseCost * months;
 
-    if (isSenior) {
-        totalCost *= 0.7; // Apply senior discount
-    }
     if (months >= 12) {
         totalCost *= 0.85; // Apply long-term membership discount
     }
     if (sessions > 5) {
-        totalCost += (sessions - 5) * 20 * 0.8; // Apply personal training session discount
+        totalCost += (sessions * 25) * 0.8; // Apply personal training session discount
     } else {
-        totalCost += sessions * 20; // No discount for sessions
+        totalCost += sessions * 25; // No discount for sessions
+    }
+    if (isSenior) {
+        totalCost *= 0.7; // Apply senior discount
     }
 
     return totalCost;

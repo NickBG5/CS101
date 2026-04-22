@@ -1,0 +1,10 @@
+Johnson 60 12.50
+Aniston 65 13.25
+Cooper 50 14.50
+Gupta 70 14.75
+Blair 55 10.50
+Clark 40 18.75
+Kennedy 45 20.50
+Bronson 60 20.00
+Sunny 65 18.75
+Smith 30 9.75
