@@ -1,0 +1,14 @@
+Veggie_Burger                        35.0
+Hamburger                              45.0
+Fried_Chicken_Sliders            38.0
+Hamburger_Sliders                 38.0
+Veggie_Sliders                        38.0
+Haddock_Sandwich                38.0
+BLT                                          42.0
+Faux_BLT                                42.0
+Chicken_Burrito                       42.0
+Falafel_Wrap                           42.0
+Cheese_Pizza                         59.0
+Pepperoni_Pizza                     59.0
+Faux_meat_and_chips            77.0
+Fish_and_chips                       77.0 

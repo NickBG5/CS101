@@ -1,0 +1,7 @@
+Manufacturer: HP
+Model Type: Model
+Processor: 2
+RAM: 32 GB
+Hard Drive Size: 1000 GB
+Year Built: 2025
+Price: $2000.00
