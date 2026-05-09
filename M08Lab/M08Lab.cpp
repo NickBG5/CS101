@@ -8,7 +8,7 @@
 
 using namespace std;
 
-/* Program name: M07LabA.cpp
+/* Program name: M08Lab.cpp
 * Author: Nicholas Garcia
 * Date last updated: 4/28/2026
 * Purpose: Program to manage restaurant operations.
@@ -33,6 +33,7 @@ struct Table {
 
 //Structured with the layout of the menu.txt file, which has the format: itemName price
 struct MenuItem {
+    int itemID;
     string itemName;
     double price;
 };
@@ -95,6 +96,7 @@ public:
             MenuItem menuItem;
             menuItem.itemName = itemName;
             menuItem.price = price;
+            menuItem.itemID = menu.size() + 1; // Assign a unique ID based on the current size of the menu
             menu.push_back(menuItem);
         }
         cout << "Menu loaded successfully!" << endl;
@@ -235,7 +237,7 @@ public:
     void seeMenu() {
         cout << "Menu:" << endl;
         for (const auto& item : menu) {
-            cout << item.itemName << " - $" << fixed << setprecision(2) << item.price << endl;
+            cout << item.itemID << ". " << item.itemName << " - $" << fixed << setprecision(2) << item.price << endl;
         }
     }
 
@@ -253,7 +255,7 @@ public:
         seeMenu(); // Show the menu to the customer before taking the order
 
         while (true) {
-            cout << "Enter item name (or 'done' to finish): ";
+            cout << "Enter item number (or 'done' to finish): ";
             getline(cin, orderItem);
             if (orderItem == "done") {
                 orders.push_back(newOrder); // Add the new order to the orders vector
@@ -262,7 +264,7 @@ public:
             }
             bool itemFound = false;
             for (const auto& menuItem : menu) {
-                if (menuItem.itemName == orderItem) {
+                if (menuItem.itemID == stoi(orderItem)) {
                     newOrder.customerName = reservations[0].customerName; // Assuming the first reservation is the one placing the order, this can be improved by matching the table number to the reservation
                     newOrder.ordTableNum = ordTableNum;
                     newOrder.itemsOrdered.push_back(orderItem);
@@ -354,6 +356,14 @@ public:
             }
         }
     }
+//Function to close the restaurant
+    void closeRestaurant() {
+        if (!orders.empty() && !reservations.empty()) {
+            cout << "There are still active orders or reservations. Please complete or cancel all orders and reservations before closing the restaurant." << endl;
+            return;
+        }
+        cout << "Restaurant is now closed. Goodbye!" << endl;
+    }
 };
 
 int main() {
@@ -370,11 +380,12 @@ int main() {
         cout << "3. Take an order" << endl;
         cout << "4. Serve order" << endl;
         cout << "5. Calculate total for the order" << endl;
-        cout << "6. View reservations (Diagnostic)" << endl;
-        cout << "7. View tables (Diagnostic)" << endl;
-        cout << "8. See menu (Diagnostic)" << endl;
-        cout << "9. View orders (Diagnostic)" << endl;
-        cout << "10. Exit" << endl;
+        cout << "6. Close Restaruant (Exit)" << endl;
+        cout << "7. View reservations (Diagnostic)" << endl;
+        cout << "8. View tables (Diagnostic)" << endl;
+        cout << "9. See menu (Diagnostic)" << endl;
+        cout << "10. View orders (Diagnostic)" << endl;
+        cout << "11. Exit" << endl;
         cout << "Enter your choice: ";
         cin >> choice;
         cin.ignore(); // Clear the input buffer
@@ -396,23 +407,26 @@ int main() {
                 messiJoes.removeReservation(); // Remove the reservation after payment is completed
                 break;
             case 6:
-                messiJoes.viewReservations();
+                messiJoes.closeRestaurant();
                 break;
             case 7:
-                messiJoes.viewTables();
+                messiJoes.viewReservations();
                 break;
             case 8:
-                messiJoes.seeMenu();
+                messiJoes.viewTables();
                 break;
             case 9:
-                messiJoes.viewOrders();
+                messiJoes.seeMenu();
                 break;
             case 10:
+                messiJoes.viewOrders();
+                break;
+            case 11:
                 cout << "Thank you for visiting MessiJoes!" << endl;
                 break;
             default:
                 cout << "Invalid choice, please try again." << endl;
         }
-    } while (choice != 10);
+    } while (choice != 6 && choice != 11);
     return 0;
 }

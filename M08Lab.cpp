@@ -8,7 +8,7 @@
 
 using namespace std;
 
-/* Program name: M07LabA.cpp
+/* Program name: M08Lab.cpp
 * Author: Nicholas Garcia
 * Date last updated: 4/28/2026
 * Purpose: Program to manage restaurant operations.
@@ -22,6 +22,7 @@ struct Reservation {
     int partySize;
     string reservationTime;
     bool isCheckedIn = false;
+    int tableNumber = 0;
 };
 
 //Structed with the layout of the tableMenu.txt file, which has the format: tableID capacity numInParty originalReservationNum inUse ordered
@@ -33,6 +34,7 @@ struct Table {
 
 //Structured with the layout of the menu.txt file, which has the format: itemName price
 struct MenuItem {
+    int itemID;
     string itemName;
     double price;
 };
@@ -95,6 +97,7 @@ public:
             MenuItem menuItem;
             menuItem.itemName = itemName;
             menuItem.price = price;
+            menuItem.itemID = menu.size() + 1; // Assign a unique ID based on the current size of the menu
             menu.push_back(menuItem);
         }
         cout << "Menu loaded successfully!" << endl;
@@ -148,6 +151,7 @@ public:
                  << endl;
         }
     }
+
 //Function to view all tables and their status
     void viewTables() {
         cout << "Table Status:" << endl;
@@ -222,20 +226,21 @@ public:
             if (tableNum == table.tableNumber) {
                 if(partySize <= table.capacity) { 
                     table.isOccupied = true;
+                    reservations[reservationIndex].tableNumber = tableNum;
                     cout << "Party seated at table " << table.tableNumber << "." << endl;
                 } else {
-                cout << "Party size exceeds table capacity. Please try again." << endl;
+                    cout << "Party size exceeds table capacity. Please try again." << endl;
                 }
-            }
+                break;
+            } 
         }
-        cout << "Invalid table number. Please try again." << endl;
     }
 
 //Function to see the menu
     void seeMenu() {
         cout << "Menu:" << endl;
         for (const auto& item : menu) {
-            cout << item.itemName << " - $" << fixed << setprecision(2) << item.price << endl;
+            cout << item.itemID << ". " << item.itemName << " - $" << fixed << setprecision(2) << item.price << endl;
         }
     }
 
@@ -248,22 +253,58 @@ public:
         cout << "Enter your table number: ";
         cin >> ordTableNum;
         cin.ignore(); // Clear the input buffer
+
+        string customerNameForOrder;
+        bool reservationMatched = false;
+        for (const auto& res : reservations) {
+            if (res.isCheckedIn && res.tableNumber == ordTableNum) {
+                customerNameForOrder = res.customerName;
+                reservationMatched = true;
+                break;
+            }
+        }
+        if (!reservationMatched) {
+            cout << "No checked-in reservation found for table " << ordTableNum << ". Please check in the customer first." << endl;
+            return;
+        }
+
         cout << "Can I take your order?" << endl;
 
         seeMenu(); // Show the menu to the customer before taking the order
 
         while (true) {
-            cout << "Enter item name (or 'done' to finish): ";
+            cout << "Enter item number (or 'done' to finish): ";
             getline(cin, orderItem);
-            if (orderItem == "done") {
+
+            if (orderItem == "done" || orderItem == "DONE" || orderItem == "Done") {
                 orders.push_back(newOrder); // Add the new order to the orders vector
                 cout << "Order taken successfully!" << endl;
                 break;
             }
+
+            if (orderItem.empty()) {
+                cout << "Please enter a menu item number or 'done'." << endl;
+                continue;
+            }
+
+            bool validNumber = true;
+            for (char c : orderItem) {
+                if (!isdigit(static_cast<unsigned char>(c))) {
+                    validNumber = false;
+                    break;
+                }
+            }
+
+            if (!validNumber) {
+                cout << "Invalid input. Please enter a menu item number or 'done'." << endl;
+                continue;
+            }
+
+            int selectedID = stoi(orderItem);
             bool itemFound = false;
             for (const auto& menuItem : menu) {
-                if (menuItem.itemName == orderItem) {
-                    newOrder.customerName = reservations[0].customerName; // Assuming the first reservation is the one placing the order, this can be improved by matching the table number to the reservation
+                if (menuItem.itemID == selectedID) {
+                    newOrder.customerName = customerNameForOrder;
                     newOrder.ordTableNum = ordTableNum;
                     newOrder.itemsOrdered.push_back(orderItem);
                     newOrder.totalPrice += menuItem.price;
@@ -277,6 +318,7 @@ public:
         }
 
     }
+
 //Function to serve an order and update the order status as devlivered
     void serveOrder() {
 
@@ -292,7 +334,6 @@ public:
                 cout << "Order for table " << ordTableNum << " has been served." << endl;
             }
         }
-        cout << "Order for table " << ordTableNum << " not found." << endl;
     }
 
 //Function to calculate the total for an order, including a 20% tip and 10% tax, and update the order status as paid
@@ -303,46 +344,53 @@ public:
         cout << "Enter table number to calculate total: ";
         cin >> ordTableNum;
 
+        bool orderFound = false;
         for(auto &order : orders) {
-            if(ordTableNum < 1 || ordTableNum > 50) {
-                cout << "Invalid table number. Please try again." << endl;
-            }
-            tip = order.totalPrice * tipPercentage;
-            tax = order.totalPrice * taxPercentage;
-            totalWithTipAndTax = order.totalPrice + tip + tax;
-            
-            cout << "Total price for table " << ordTableNum << " is $" << fixed << setprecision(2) << order.totalPrice << endl;
-            cout << "Tip for table " << ordTableNum << " is $" << fixed << setprecision(2) << tip << endl;
-            cout << "Tax for table " << ordTableNum << " is $" << fixed << setprecision(2) << tax << endl;
-            cout << "Total with tip and tax for table " << ordTableNum << " is $" << fixed << setprecision(2) << totalWithTipAndTax << endl;
+            if (order.ordTableNum == ordTableNum) {
+                orderFound = true;
+                tip = order.totalPrice * tipPercentage;
+                tax = order.totalPrice * taxPercentage;
+                totalWithTipAndTax = order.totalPrice + tip + tax;
+                
+                cout << "Total price for table " << ordTableNum << " is $" << fixed << setprecision(2) << order.totalPrice << endl;
+                cout << "Tip for table " << ordTableNum << " is $" << fixed << setprecision(2) << tip << endl;
+                cout << "Tax for table " << ordTableNum << " is $" << fixed << setprecision(2) << tax << endl;
+                cout << "Total with tip and tax for table " << ordTableNum << " is $" << fixed << setprecision(2) << totalWithTipAndTax << endl;
 
-            cout << "Do you want to pay now? (Y/N): ";
-            char payNow;
-            cin >> payNow;
+                cout << "Do you want to pay now? (Y/N): ";
+                char payNow;
+                cin >> payNow;
 
-            if (payNow == 'Y' || payNow == 'y') {
-                // Update the order status as paid
-                order.orderPaid = true;
-                cout << "Order for table " << ordTableNum << " has been paid." << endl;
-            } else {
-                cout << "Payment deferred for table " << ordTableNum << "." << endl;
+                if (payNow == 'Y' || payNow == 'y') {
+                    // Update the order status as paid
+                    order.orderPaid = true;
+                    cout << "Order for table " << ordTableNum << " has been paid." << endl;
+                } else {
+                    cout << "Payment deferred for table " << ordTableNum << "." << endl;
+                }
+                break; // Only process the first matching order
             }
         }
-        cout << "Order for table " << ordTableNum << " not found." << endl;
+        if (!orderFound) {
+            cout << "No order found for table " << ordTableNum << "." << endl;
+        }
     }
 
 //Function to remove a reservation after payment is completed
     void removeReservation() {
         if (reservations.empty()) {
             cout << "No reservations to remove." << endl;
+            return;
         }
 
         for (const auto& order : orders) {
-            if (order.orderPaid) {
-                for (auto it = reservations.begin(); it != reservations.end(); ++it) {
+            if (order.orderPaid == true) {
+                for (auto it = reservations.begin(); it != reservations.end(); ) {
                     if (it->customerName == order.customerName) {
-                        reservations.erase(it);
                         cout << "Reservation for " << order.customerName << " has been removed." << endl;
+                        it = reservations.erase(it);
+                    } else {
+                        ++it;
                     }
                 }
             for(auto &table : tables) {
@@ -353,6 +401,33 @@ public:
                 }
             }
         }
+    }
+
+//Function to remove an order after payment is completed
+    void removeOrder() {
+        if (orders.empty()) {
+            cout << "No orders to remove." << endl;
+            return;
+        }
+
+        for (auto it = orders.begin(); it != orders.end(); ) {
+            if (it->orderPaid) {
+                cout << "Order for " << it->customerName << " has been removed." << endl;
+                it = orders.erase(it);
+            } else {
+                ++it;
+            }
+        }
+    }
+
+//Function to close the restaurant
+    bool closeRestaurant() {
+        if (!orders.empty() || !reservations.empty()) {
+            cout << "There are still active orders or reservations. Please complete or cancel all orders and reservations before closing the restaurant." << endl;
+            return false;
+        }
+        cout << "Restaurant is now closed. Goodbye!" << endl;
+        return true;
     }
 };
 
@@ -369,12 +444,13 @@ int main() {
         cout << "2. Check-in and be seated" << endl;
         cout << "3. Take an order" << endl;
         cout << "4. Serve order" << endl;
-        cout << "5. Calculate total for the order" << endl;
-        cout << "6. View reservations (Diagnostic)" << endl;
-        cout << "7. View tables (Diagnostic)" << endl;
-        cout << "8. See menu (Diagnostic)" << endl;
-        cout << "9. View orders (Diagnostic)" << endl;
-        cout << "10. Exit" << endl;
+        cout << "5. Calculate total for the order and Pay" << endl;
+        cout << "6. Close Restaruant (Exit)" << endl;
+        cout << "7. View reservations (Diagnostic)" << endl;
+        cout << "8. View tables (Diagnostic)" << endl;
+        cout << "9. See menu (Diagnostic)" << endl;
+        cout << "10. View orders (Diagnostic)" << endl;
+        cout << "11. Exit" << endl;
         cout << "Enter your choice: ";
         cin >> choice;
         cin.ignore(); // Clear the input buffer
@@ -394,25 +470,31 @@ int main() {
             case 5:
                 messiJoes.calculateBill();
                 messiJoes.removeReservation(); // Remove the reservation after payment is completed
+                messiJoes.removeOrder(); // Remove the order after payment is completed
                 break;
             case 6:
-                messiJoes.viewReservations();
+                if (!messiJoes.closeRestaurant()) {
+                    choice = 0; // Keep the menu open if closing is not allowed
+                }
                 break;
             case 7:
-                messiJoes.viewTables();
+                messiJoes.viewReservations();
                 break;
             case 8:
-                messiJoes.seeMenu();
+                messiJoes.viewTables();
                 break;
             case 9:
-                messiJoes.viewOrders();
+                messiJoes.seeMenu();
                 break;
             case 10:
+                messiJoes.viewOrders();
+                break;
+            case 11:
                 cout << "Thank you for visiting MessiJoes!" << endl;
                 break;
             default:
                 cout << "Invalid choice, please try again." << endl;
         }
-    } while (choice != 10);
+    } while (choice != 6 && choice != 11);
     return 0;
 }
